@@ -96,78 +96,6 @@ _task_data_schema = {
     'example': {'id': 1, 'my_image_url': '/static/samples/kittens.jpg'},
 }
 
-_project_schema = {
-    'title': 'Project',
-    'description': 'Project',
-    'type': 'object',
-    'properties': {
-        'title': {
-            'type': 'string',
-            'description': 'Project title',
-            'example': 'My project',
-        },
-        'description': {
-            'type': 'string',
-            'description': 'Project description',
-            'example': 'My first project',
-        },
-        'label_config': {
-            'type': 'string',
-            'description': 'Label config in XML format',
-            'example': '<View>[...]</View>',
-        },
-        'expert_instruction': {
-            'type': 'string',
-            'description': 'Labeling instructions to show to the user',
-            'example': 'Label all cats',
-        },
-        'show_instruction': {
-            'type': 'boolean',
-            'description': 'Show labeling instructions',
-        },
-        'show_skip_button': {
-            'type': 'boolean',
-            'description': 'Show skip button',
-        },
-        'enable_empty_annotation': {
-            'type': 'boolean',
-            'description': 'Allow empty annotations',
-        },
-        'show_annotation_history': {
-            'type': 'boolean',
-            'description': 'Show annotation history',
-        },
-        'reveal_preannotations_interactively': {
-            'type': 'boolean',
-            'description': 'Reveal preannotations interactively. If set to True, predictions will be shown to the user only after selecting the area of interest',
-        },
-        'show_collab_predictions': {
-            'type': 'boolean',
-            'description': 'Show predictions to annotators',
-        },
-        'maximum_annotations': {
-            'type': 'integer',
-            'description': 'Maximum annotations per task',
-        },
-        'color': {
-            'type': 'string',
-            'description': 'Project color in HEX format',
-            'default': '#FFFFFF',
-        },
-        'control_weights': {
-            'type': 'object',
-            'description': 'Dict of weights for each control tag in metric calculation. Each control tag (e.g. label or choice) will '
-            'have its own key in control weight dict with weight for each label and overall weight. '
-            'For example, if a bounding box annotation with a control tag named my_bbox should be included with 0.33 weight in agreement calculation, '
-            'and the first label Car should be twice as important as Airplane, then you need to specify: '
-            "{'my_bbox': {'type': 'RectangleLabels', 'labels': {'Car': 1.0, 'Airplane': 0.5}, 'overall': 0.33}",
-            'example': {
-                'my_bbox': {'type': 'RectangleLabels', 'labels': {'Car': 1.0, 'Airplaine': 0.5}, 'overall': 0.33}
-            },
-        },
-    },
-}
-
 
 class ProjectListPagination(PageNumberPagination):
     page_size = 30
@@ -197,6 +125,10 @@ class ProjectFilterSet(FilterSet):
     """.format(
             settings.HOSTNAME or 'https://localhost:8080'
         ),
+        parameters=[
+            *serializer_to_openapi_params(GetFieldsSerializer),
+            *filterset_to_openapi_params(ProjectFilterSet),
+        ],
         extensions={
             'x-fern-sdk-group-name': 'projects',
             'x-fern-sdk-method-name': 'counts',
@@ -223,9 +155,7 @@ class ProjectFilterSet(FilterSet):
     """.format(
             settings.HOSTNAME or 'https://localhost:8080'
         ),
-        request={
-            'application/json': _project_schema,
-        },
+        request=ProjectSerializer,
         extensions={
             'x-fern-sdk-group-name': 'projects',
             'x-fern-sdk-method-name': 'create',
@@ -405,9 +335,7 @@ class ProjectCountsListAPI(generics.ListAPIView):
         tags=['Projects'],
         summary='Update project',
         description='Update the project settings for a specific project.',
-        request={
-            'application/json': _project_schema,
-        },
+        request=ProjectSerializer,
         extensions={
             'x-fern-sdk-group-name': 'projects',
             'x-fern-sdk-method-name': 'update',

@@ -974,8 +974,11 @@ class Project(ProjectMixin, models.Model):
             output = {r['model_version']: r['count'] for r in model_versions}
 
             # Ensure that self.model_version exists in output
-            if self.model_version and self.model_version not in output and len(output) < limit:
-                output[self.model_version] = 0
+            if self.model_version and self.model_version not in output:
+                if limit and len(output) < limit:
+                    output[self.model_version] = 0
+                elif not limit:
+                    output[self.model_version] = 0
 
             # Return as per requirement
             return output if with_counters else list(output.keys())
